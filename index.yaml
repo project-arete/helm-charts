@@ -1,6 +1,35 @@
 apiVersion: v1
 entries:
+  Arete:
+  - apiVersion: v2
+    created: "2026-03-31T04:27:29.776854793Z"
+    dependencies:
+    - name: arete-cli
+      repository: file://./../arete-cli
+      version: ~0.1.0
+    - name: arete-etcd
+      repository: file://./../arete-etcd
+      version: ~0.2.0
+    - name: arete-orchestrator
+      repository: file://./../arete-orchestrator
+      version: ~0.1.0
+    description: Install Arete on your Kubernetes Cluster
+    digest: 8669a94f2f19c9aff96b07e1143177f48995651a2a0b912141af4ea7d6a45370
+    name: Arete
+    urls:
+    - https://github.com/project-arete/helm-charts/releases/download/Arete-0.1.0/Arete-0.1.0.tgz
+    version: 0.1.0
   arete-etcd:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-03-31T04:27:29.933862616Z"
+    description: A Helm chart installing ETCD for Arete
+    digest: 7e3599d91f76aa05414ede63b844c9178ed15fe069005d8cd75497ea4c5cd986
+    name: arete-etcd
+    type: application
+    urls:
+    - https://github.com/project-arete/helm-charts/releases/download/arete-etcd-0.2.0/arete-etcd-0.2.0.tgz
+    version: 0.2.0
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2026-03-31T04:03:12.383503566Z"
@@ -11,4 +40,4 @@ entries:
     urls:
     - https://github.com/project-arete/helm-charts/releases/download/arete-etcd-0.1.0/arete-etcd-0.1.0.tgz
     version: 0.1.0
-generated: "2026-03-31T04:03:12.383510098Z"
+generated: "2026-03-31T04:27:29.933870412Z"
