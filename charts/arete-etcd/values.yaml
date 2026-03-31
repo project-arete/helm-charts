@@ -28,9 +28,6 @@ etcd:
     hosts:
       - "*"
   
-  ingress:
-    enabled: true
-  
   pvc:
     enabled: true
     storageClassName: standard
