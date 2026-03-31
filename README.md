@@ -25,3 +25,10 @@ arete/arete-etcd                   0.1.0           1.0.0           A Helm chart 
 arete/arete-orchestrator           0.1.0           1.0.0           A Helm chart installing Arete Orchestrator
 ```
 
+
+## Updating the mono-chart
+
+1. Make necessary changes to submodule.
+1. Update the chart version in the submodule
+1. Update the dependency version in arete [Chart.yaml](./charts/arete/Chart.yaml)
+1. Run `helm dependency update`
