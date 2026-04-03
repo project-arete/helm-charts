@@ -1,0 +1,111 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-etcd
+  labels:
+    app: {{ .Values.name }}-etcd
+spec:
+  replicas: {{ .Values.etcd.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-etcd
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-etcd
+    spec:
+      containers:
+      - name: {{ .Values.name }}-etcd
+        image: {{ .Values.etcd.imageRepository }}:{{ .Values.etcd.imageTag }}
+        ports:
+        - containerPort: {{ .Values.etcd.servicePort }}
+          name: service
+        {{- if .Values.etcd.peerPort }}
+        - containerPort: {{ .Values.etcd.peerPort }}
+          name: peer
+        {{- end }}
+        command:
+        - /usr/local/bin/etcd
+        args:
+        {{- if .Values.etcd.args }}
+        {{- range .Values.etcd.args }}
+          - "--{{ .arg }}"
+          - "{{ .value }}"
+        {{- end }}
+        {{- end }}
+        env:
+        {{- if .Values.etcd.env }}
+        {{- range .Values.etcd.env }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+        {{- end }}
+        {{- end }}
+      #   volumeMounts:
+      #   - name: "{{ .Values.name }}-vol"
+      #     mountPath: {{ .Values.etcd.dataMountPoint }}
+      # volumes:
+      # - name: "{{ .Values.name }}-vol"
+      #   persistentVolumeClaim:
+      #     claimName: "{{ .Values.name }}-pvc"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-cli
+  labels:
+    name: {{ .Values.name }}-cli
+spec:
+  replicas: {{ .Values.cli.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-cli
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-cli
+      annotations:
+        {{ if .Values.cli.rollPods }}
+        rollme: {{ randAlphaNum 5 | quote }} 
+        {{ end }}
+    spec:
+      imagePullSecrets:
+        - name: artifact-registry-secret
+      containers:
+        - name: {{ .Values.name }}-cli
+          image: {{ .Values.cli.imageRepository }}:{{ .Values.cli.imageTag }}
+          imagePullPolicy: {{ .Values.cli.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.name }}-config
+          ports:
+            - containerPort: {{ .Values.cli.containerPort }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-orch
+  labels:
+    name: {{ .Values.name }}-orch
+spec:
+  replicas: {{ .Values.orch.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-orch
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-orch
+    spec:
+      imagePullSecrets:
+        - name: artifact-registry-secret
+      serviceAccountName: {{ .Values.orch.serviceAccountName }}
+      containers:
+        - name: {{ .Values.name }}-orch
+          image: {{ .Values.orch.imageRepository }}:{{ .Values.orch.imageTag }}
+          imagePullPolicy: {{ .Values.orch.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.name }}-config

@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-config
+data:
+  CNS_HOST: "{{ .Values.name }}-etcd.{{ .Release.Namespace }}.svc.cluster.local"
+  CNS_PORT: "2379"
+  # CNS_USERNAME: {{ .Values.name | quote }}
+  # CNS_PASSWORD: {{ include "cns_password" . | quote }}
+  CNS_PROFILES: "https://cp.padi.io/profiles"

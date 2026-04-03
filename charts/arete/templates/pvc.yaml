@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: "{{ .Values.etcd.name }}-pvc"
+  name: "{{ .Values.name }}-etcd-pvc"
 spec:
   storageClassName: {{ .Values.etcd.pvc.storageClassName }}
   accessModes:
