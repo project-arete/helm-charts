@@ -41,6 +41,13 @@ spec:
             value: {{ .value | quote }}
         {{- end }}
         {{- end }}
+        resources:
+          requests:
+            cpu: {{ .Values.etcd.requests.cpu }}
+            memory: {{ .Values.etcd.requests.memory }}
+          limits:
+            cpu: {{ .Values.etcd.limits.cpu }}
+            memory: {{ .Values.etcd.limits.memory }}
       #   volumeMounts:
       #   - name: "{{ .Values.name }}-vol"
       #     mountPath: {{ .Values.etcd.dataMountPoint }}
@@ -81,6 +88,13 @@ spec:
                 name: {{ .Values.name }}-config
           ports:
             - containerPort: {{ .Values.cli.containerPort }}
+          resources:
+            requests:
+              cpu: {{ .Values.cli.requests.cpu }}
+              memory: {{ .Values.cli.requests.memory }}
+            limits:
+              cpu: {{ .Values.cli.limits.cpu }}
+              memory: {{ .Values.cli.limits.memory }}
 
 ---
 apiVersion: apps/v1
@@ -109,3 +123,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Values.name }}-config
+          resources:
+            requests:
+              cpu: {{ .Values.orch.requests.cpu }}
+              memory: {{ .Values.orch.requests.memory }}
+            limits:
+              cpu: {{ .Values.orch.limits.cpu }}
+              memory: {{ .Values.orch.limits.memory }}

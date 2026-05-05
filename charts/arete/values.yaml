@@ -9,6 +9,12 @@ cli:
   replicas: 1
   containerPort: 8080
   servicePort: 8080
+  requests:
+    memory: '64Mi'
+    cpu: '10m'
+  limits:
+    memory: '128Mi'
+    cpu: '100m'
 
 
 etcd:
@@ -36,6 +42,12 @@ etcd:
     accessModes:
       - ReadWriteOnce
     volumeSize: 1Gi
+  requests:
+    memory: '64Mi'
+    cpu: '10m'
+  limits:
+    memory: '128Mi'
+    cpu: '100m'
 
 
 orch:
@@ -43,3 +55,9 @@ orch:
   imageTag: latest
   pullPolicy: Always
   replicas: 1
+  requests:
+    memory: '64Mi'
+    cpu: '10m'
+  limits:
+    memory: '128Mi'
+    cpu: '100m'
