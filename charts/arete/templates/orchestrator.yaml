@@ -1,0 +1,65 @@
+
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: {{ .Values.name }}-orch
+  namespace: {{ .Release.Namespace }}
+{{- if .Values.orch.imagePullSecrets }}
+imagePullSecrets:
+  {{- range .Values.orch.imagePullSecrets }}
+  - name: {{ . }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-orch
+  labels:
+    name: {{ .Values.name }}-orch
+spec:
+  replicas: {{ .Values.orch.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-orch
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-orch
+    spec:
+      serviceAccountName: {{ .Values.name }}-orch
+      {{- if .Values.orch.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.orch.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.name }}-orch
+          image: {{ .Values.orch.imageRepository }}:{{ .Values.orch.imageTag }}
+          imagePullPolicy: {{ .Values.orch.pullPolicy }}
+          env:
+          {{- if .Values.orch.credentialsSecretRef }}
+            - name: CNS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.orch.credentialsSecretRef }}
+                  key: CNS_USERNAME
+            - name: CNS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.orch.credentialsSecretRef }}
+                  key: CNS_PASSWORD
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.name }}-config
+          resources:
+            requests:
+              cpu: {{ .Values.orch.requests.cpu }}
+              memory: {{ .Values.orch.requests.memory }}
+            limits:
+              cpu: {{ .Values.orch.limits.cpu }}
+              memory: {{ .Values.orch.limits.memory }}

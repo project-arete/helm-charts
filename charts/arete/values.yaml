@@ -3,10 +3,13 @@
 
 cli:
   serviceAccountName: cli
-  imageRepository: us-central1-docker.pkg.dev/padi-staging/cnscp/cns-cli
-  imageTag: latest
+  imagePullSecrets:
+    - padi-artifact-hub
+  imageRepository: us-central1-docker.pkg.dev/padi-80910/cnscp-preprod/cns-cli
+  imageTag: 9f5483c
   pullPolicy: Always
   replicas: 1
+  credentialsSecretRef: arete-etcd-user
   containerPort: 8080
   servicePort: 8080
   requests:
@@ -15,6 +18,8 @@ cli:
   limits:
     memory: '128Mi'
     cpu: '200m'
+  ingress:
+    enabled: false
 
 
 etcd:
@@ -23,6 +28,8 @@ etcd:
   imageTag: 'v3.5.0'
   servicePort: 2379
   peerPort: 2380
+  configureUsers: true
+  username: "padi"
   args:
     - arg: "name"
       value: "arete-etcd-0"
@@ -49,13 +56,16 @@ etcd:
     memory: '128Mi'
     cpu: '200m'
   ingress:
-    enabled: true
+    enabled: false
 
 
 orch:
-  imageRepository: us-central1-docker.pkg.dev/padi-staging/cnscp/cns-orchestrator
-  imageTag: latest
+  imagePullSecrets:
+    - padi-artifact-hub
+  imageRepository: us-central1-docker.pkg.dev/padi-80910/cnscp-preprod/cns-orchestrator
+  imageTag: staging
   pullPolicy: Always
+  credentialsSecretRef: arete-etcd-user
   replicas: 1
   requests:
     memory: '64Mi'

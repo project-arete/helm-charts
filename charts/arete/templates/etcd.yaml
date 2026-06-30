@@ -1,0 +1,223 @@
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: {{ .Values.name }}-etcd
+  namespace: {{ .Release.Namespace }}
+{{- if .Values.etcd.imagePullSecrets }}
+imagePullSecrets:
+  {{- range .Values.etcd.imagePullSecrets }}
+  - name: {{ . }}
+  {{- end }}
+{{- end }}
+
+---
+{{- if .Values.etcd.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{ .Values.name }}-etcd-pvc"
+spec:
+  storageClassName: {{ .Values.etcd.pvc.storageClassName }}
+  accessModes:
+    {{- range .Values.etcd.pvc.accessModes }}
+    - {{ . }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.etcd.pvc.volumeSize }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "arete.root.etcdSecretName" . }}
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+data:
+  ETCD_ROOT_USERNAME: cm9vdA==
+  ETCD_ROOT_PASSWORD: {{ include "arete.root.etcdPassword" . }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "arete.user.etcdSecretName" . }}
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+data:
+  CNS_USERNAME: {{ include "arete.user.etcdUsername" . }}
+  CNS_PASSWORD: {{ include "arete.user.etcdPassword" . }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-etcd
+  labels:
+    app: {{ .Values.name }}-etcd
+spec:
+  replicas: {{ .Values.etcd.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-etcd
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-etcd
+    spec:
+      serviceAccountName: {{ .Values.name }}-etcd
+      containers:
+      - name: {{ .Values.name }}-etcd
+        image: {{ .Values.etcd.imageRepository }}:{{ .Values.etcd.imageTag }}
+        ports:
+        - containerPort: {{ .Values.etcd.servicePort }}
+          name: service
+        {{- if .Values.etcd.peerPort }}
+        - containerPort: {{ .Values.etcd.peerPort }}
+          name: peer
+        {{- end }}
+        command:
+        - /usr/local/bin/etcd
+        args:
+        {{- if .Values.etcd.args }}
+        {{- range .Values.etcd.args }}
+          - "--{{ .arg }}"
+          - "{{ .value }}"
+        {{- end }}
+        {{- end }}
+        env:
+        {{- if .Values.etcd.env }}
+        {{- range .Values.etcd.env }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+        {{- end }}
+        {{- end }}
+        resources:
+          requests:
+            cpu: {{ .Values.etcd.requests.cpu }}
+            memory: {{ .Values.etcd.requests.memory }}
+          limits:
+            cpu: {{ .Values.etcd.limits.cpu }}
+            memory: {{ .Values.etcd.limits.memory }}
+        {{- if .Values.etcd.pvc.enabled }}
+        volumeMounts:
+        - name: "{{ .Values.name }}-vol"
+          mountPath: {{ .Values.etcd.dataMountPoint }}
+        {{- end }}
+      {{- if .Values.etcd.pvc.enabled }}  
+      volumes:
+      - name: "{{ .Values.name }}-vol"
+        persistentVolumeClaim:
+          claimName: "{{ .Values.name }}-etcd-pvc"
+      {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-etcd
+  labels:
+    app: {{ .Values.name }}-etcd
+spec:
+  ports:
+  - port: {{ .Values.etcd.servicePort }}
+    targetPort: {{ .Values.etcd.servicePort }}
+    name: "{{ .Values.name }}-client"
+  - port: {{ .Values.etcd.peerPort }}
+    targetPort: {{ .Values.etcd.peerPort }}
+    name: "{{ .Values.name }}-peer"
+  selector:
+    app: {{ .Values.name }}-etcd
+
+---
+{{- if .Values.etcd.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  annotations:
+  name: {{ .Values.name }}-etcd
+spec:
+  entryPoints:
+  - etcd
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.name }}.aretehosting.com`)
+    services:
+    - name: {{ .Values.name }}-etcd
+      port: 2379
+      scheme: h2c
+  tls:
+    secretName: arete-hosting-tls
+{{- end }}
+
+---
+{{- if .Values.etcd.configureUsers }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: etcd-init-auth
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: setup
+        image: {{ .Values.etcd.imageRepository }}:{{ .Values.etcd.imageTag }}
+        env:
+          - name: ETCD_ENDPOINT
+            value: "http://{{ .Values.name }}-etcd.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.etcd.servicePort }}"
+          - name: ETCD_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "arete.root.etcdSecretName" . }}
+                key: ETCD_ROOT_PASSWORD
+          - name: CNS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "arete.user.etcdSecretName" . }}
+                key: CNS_USERNAME
+          - name: CNS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "arete.user.etcdSecretName" . }}
+                key: CNS_PASSWORD
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Details:"
+          echo "  ENDPOINT: $ETCD_ENDPOINT"
+          echo "  CNS_USERNAME: $CNS_USERNAME"
+          echo ""
+          echo "Checking if auth is already enabled..."
+          AUTH_STATUS=$(etcdctl --endpoints=$ETCD_ENDPOINT auth status 2>&1)
+          if echo "$AUTH_STATUS" | grep -q "Authentication Status: true" || echo "$AUTH_STATUS" | grep -q "user name is empty"; then
+            echo "Auth already enabled, exiting."
+            exit 0
+          fi
+
+          echo "Waiting for etcd to be ready..."
+          until etcdctl --endpoints=$ETCD_ENDPOINT endpoint health; do sleep 2; done
+
+
+          echo "Creating role 'root'..."
+          etcdctl --endpoints=$ETCD_ENDPOINT role add root
+
+          echo "Creating users..."
+          etcdctl --endpoints=$ETCD_ENDPOINT user add root:$ETCD_ROOT_PASSWORD
+          etcdctl --endpoints=$ETCD_ENDPOINT user add $CNS_USERNAME:$CNS_PASSWORD
+
+          echo "Granting 'root' role to users..."
+          etcdctl --endpoints=$ETCD_ENDPOINT user grant-role root root
+          etcdctl --endpoints=$ETCD_ENDPOINT user grant-role $CNS_USERNAME root
+
+          echo "Enabling authentication..."
+          etcdctl --endpoints=$ETCD_ENDPOINT auth enable
+{{- end }}
