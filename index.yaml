@@ -22,6 +22,16 @@ entries:
   arete:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-07-11T23:07:35.095579344Z"
+    description: A Helm chart installing Arete
+    digest: 7b3dc0dfd44d426e1205117986bad3b2b9e45805a75bcf6b39dc1f31ff0a6cea
+    name: arete
+    type: application
+    urls:
+    - https://github.com/project-arete/helm-charts/releases/download/arete-1.5.1/arete-1.5.1.tgz
+    version: 1.5.1
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-07-11T21:35:41.884121797Z"
     description: A Helm chart installing Arete
     digest: c6431486e35d801118a72da97e34745939972b17a5063bf9382819a4d813a363
@@ -131,4 +141,4 @@ entries:
     urls:
     - https://github.com/project-arete/helm-charts/releases/download/arete-etcd-0.1.0/arete-etcd-0.1.0.tgz
     version: 0.1.0
-generated: "2026-07-11T21:35:41.884149653Z"
+generated: "2026-07-11T23:07:35.095627173Z"
