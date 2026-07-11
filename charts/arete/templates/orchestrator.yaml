@@ -41,18 +41,16 @@ spec:
           image: {{ .Values.orch.imageRepository }}:{{ .Values.orch.imageTag }}
           imagePullPolicy: {{ .Values.orch.pullPolicy }}
           env:
-          {{- if .Values.orch.credentialsSecretRef }}
             - name: CNS_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.orch.credentialsSecretRef }}
+                  name: {{ include "arete.user.etcdSecretName" . }}
                   key: CNS_USERNAME
             - name: CNS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.orch.credentialsSecretRef }}
+                  name: {{ include "arete.user.etcdSecretName" . }}
                   key: CNS_PASSWORD
-          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.name }}-config

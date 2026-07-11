@@ -57,23 +57,23 @@ spec:
           {{- end }}
           imagePullPolicy: {{ .Values.cli.pullPolicy }}
           env:
-          {{- if .Values.cli.credentialsSecretRef }}
             - name: CNS_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.cli.credentialsSecretRef }}
+                  name: {{ include "arete.user.etcdSecretName" . }}
                   key: CNS_USERNAME
             - name: CNS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.cli.credentialsSecretRef }}
+                  name: {{ include "arete.user.etcdSecretName" . }}
                   key: CNS_PASSWORD
-          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.name }}-config
           ports:
-            - containerPort: {{ .Values.cli.containerPort }}
+            - containerPort: {{ .Values.cli.dashboardPort }}
+            - containerPort: {{ .Values.cli.networkPort }}
+              name: network
           resources:
             requests:
               cpu: {{ .Values.cli.requests.cpu }}
@@ -86,15 +86,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.name }}-cli
+  name: {{ .Values.name }}-dashboard
   namespace: {{ .Release.Namespace }}
 spec:
+  type: NodePort
   selector:
     app: {{ .Values.name }}-cli
   ports:
-    - protocol: TCP
-      port: {{ .Values.cli.servicePort }}
-      targetPort: {{ .Values.cli.containerPort }}
+    - port: {{ .Values.cli.dashboardPort }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-network
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: NodePort
+  selector:
+    app: {{ .Values.name }}-cli
+  ports:
+    - port: {{ .Values.cli.networkPort }}
 
 ---
 {{- if .Values.cli.ingress.enabled }}

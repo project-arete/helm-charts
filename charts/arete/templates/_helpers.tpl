@@ -39,7 +39,11 @@
     Name of the etcd user credentials Secret.
 */}}
 {{- define "arete.user.etcdSecretName" -}}
+{{- if .Values.arete.credentialsSecretRef -}}
+{{- .Values.arete.credentialsSecretRef -}}
+{{- else -}}
 {{- printf "%s-etcd-user" .Values.name -}}
+{{- end -}}
 {{- end -}}
 
 {{/*

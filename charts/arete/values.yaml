@@ -1,6 +1,11 @@
 # required
 # name:
 
+arete:
+  # Name of the k8s secret containing the CNS_USERNAME and CNS_PASSWORD
+  # Defaults to <name>-etcd-user
+  credentialsSecretRef: ""
+
 cli:
   serviceAccountName: cli
   imagePullSecrets:
@@ -9,9 +14,8 @@ cli:
   imageTag: 9f5483c
   pullPolicy: Always
   replicas: 1
-  credentialsSecretRef: arete-etcd-user
-  containerPort: 8080
-  servicePort: 8080
+  dashboardPort: 8080
+  networkPort: 2379
   requests:
     memory: '64Mi'
     cpu: '100m'
@@ -65,7 +69,6 @@ orch:
   imageRepository: us-central1-docker.pkg.dev/padi-80910/cnscp-preprod/cns-orchestrator
   imageTag: staging
   pullPolicy: Always
-  credentialsSecretRef: arete-etcd-user
   replicas: 1
   requests:
     memory: '64Mi'
