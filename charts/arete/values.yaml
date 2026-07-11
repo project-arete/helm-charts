@@ -11,7 +11,7 @@ cli:
   imagePullSecrets:
     - padi-artifact-hub
   imageRepository: us-central1-docker.pkg.dev/padi-80910/cnscp-preprod/cns-cli
-  imageTag: 9f5483c
+  imageTag: staging
   pullPolicy: Always
   replicas: 1
   env:
