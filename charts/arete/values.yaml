@@ -14,6 +14,9 @@ cli:
   imageTag: 9f5483c
   pullPolicy: Always
   replicas: 1
+  env:
+    - name: DEBUG
+      value: true
   dashboardPort: 8080
   networkPort: 2379
   requests:
@@ -23,7 +26,7 @@ cli:
     memory: '128Mi'
     cpu: '200m'
   ingress:
-    enabled: false
+    enabled: true
 
 
 etcd:
@@ -33,7 +36,8 @@ etcd:
   servicePort: 2379
   peerPort: 2380
   configureUsers: true
-  username: "padi"
+  # username: "<AUTO_GENERATED>"
+  # password: <AUTO_GENERATED>
   args:
     - arg: "name"
       value: "arete-etcd-0"
@@ -69,6 +73,9 @@ orch:
   imageRepository: us-central1-docker.pkg.dev/padi-80910/cnscp-preprod/cns-orchestrator
   imageTag: staging
   pullPolicy: Always
+  env:
+    # - name: foo
+    #   value: bar
   replicas: 1
   requests:
     memory: '64Mi'

@@ -41,6 +41,12 @@ spec:
           image: {{ .Values.orch.imageRepository }}:{{ .Values.orch.imageTag }}
           imagePullPolicy: {{ .Values.orch.pullPolicy }}
           env:
+          {{- if .Values.orch.env }}
+          {{- range .Values.orch.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          {{- end }}
             - name: CNS_USERNAME
               valueFrom:
                 secretKeyRef:
