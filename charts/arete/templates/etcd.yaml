@@ -157,7 +157,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: etcd-init-auth
+  name: etcd-init-auth-{{ .Values.name }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
