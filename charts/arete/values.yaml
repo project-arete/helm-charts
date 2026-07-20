@@ -45,8 +45,8 @@ etcd:
       value: "http://0.0.0.0:2379"
     - arg: "advertise-client-urls"
       value: "http://0.0.0.0:2379"
-    # - arg: "data-dir"
-    #   value: "/etcd-data"
+    - arg: "data-dir"
+      value: "/etcd-data"
   dataMountPoint: "/etcd-data"
   env:
     # - name: foo
