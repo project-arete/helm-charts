@@ -22,6 +22,16 @@ data:
   CNS_PROFILES: "https://cp.padi.io/profiles"
 
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "arete.cli.dashboardSecretName" . }}
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+data:
+  CNS_DASHBOARD_SECRET: {{ include "arete.cli.dashboardSecret" . }}
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -73,6 +83,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "arete.user.etcdSecretName" . }}
                   key: CNS_PASSWORD
+            - name: CNS_DASHBOARD_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "arete.cli.dashboardSecretName" . }}
+                  key: CNS_DASHBOARD_SECRET
           envFrom:
             - configMapRef:
                 name: {{ .Values.name }}-config

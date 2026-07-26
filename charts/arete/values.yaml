@@ -1,6 +1,11 @@
 # required
 # name:
 
+# JWT signing secret for the cns-cli dashboard (CNS_DASHBOARD_SECRET).
+# aretehosting mints per-realm dashboard access tokens against this secret;
+# if left blank, one is generated and persisted in a Secret on first install.
+# dashboardSecret: ""
+
 arete:
   # Name of the k8s secret containing the CNS_USERNAME and CNS_PASSWORD
   # Defaults to <name>-etcd-user

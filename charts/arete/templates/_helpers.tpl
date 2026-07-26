@@ -99,3 +99,20 @@
 {{- $secretName := include "arete.user.etcdSecretName" . -}}
 {{- include "arete.user.password" (dict "value" .Values.etcd.userPassword "secretName" $secretName "key" "CNS_PASSWORD" "context" .) | b64enc -}}
 {{- end -}}
+
+{{/*
+    Name of the cli dashboard secret Secret.
+*/}}
+{{- define "arete.cli.dashboardSecretName" -}}
+{{- printf "%s-cli-dashboard" .Values.name -}}
+{{- end -}}
+
+{{/*
+    Returns the dashboard JWT signing secret, base64-encoded, generating one if
+    not set. This secret is used by cns-cli (CNS_DASHBOARD_SECRET) to verify
+    dashboard access tokens issued by aretehosting; it is not the token itself.
+*/}}
+{{- define "arete.cli.dashboardSecret" -}}
+{{- $secretName := include "arete.cli.dashboardSecretName" . -}}
+{{- include "arete.user.password" (dict "value" .Values.dashboardSecret "secretName" $secretName "key" "CNS_DASHBOARD_SECRET" "context" .) | b64enc -}}
+{{- end -}}
