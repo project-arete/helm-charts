@@ -21,6 +21,7 @@ data:
   CNS_PORT: "2379"
   CNS_PROFILES: "https://cp.padi.io/profiles"
 
+{{- if or (not (kindIs "bool" .Values.dashboardSecret)) .Values.dashboardSecret }}
 ---
 apiVersion: v1
 kind: Secret
@@ -30,6 +31,7 @@ metadata:
 type: Opaque
 data:
   CNS_DASHBOARD_SECRET: {{ include "arete.cli.dashboardSecret" . }}
+{{- end }}
 
 ---
 apiVersion: apps/v1
