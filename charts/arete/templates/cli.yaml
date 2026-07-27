@@ -85,11 +85,13 @@ spec:
                 secretKeyRef:
                   name: {{ include "arete.user.etcdSecretName" . }}
                   key: CNS_PASSWORD
+          {{- if or (not (kindIs "bool" .Values.dashboardSecret)) .Values.dashboardSecret }}
             - name: CNS_DASHBOARD_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "arete.cli.dashboardSecretName" . }}
                   key: CNS_DASHBOARD_SECRET
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.name }}-config
